@@ -1,9 +1,26 @@
 body {
-    background: #f0f0f0
+    background: #f0f0f0;
+    font-family: 'Ubuntu Mono', monospace;
 }
 .container {
     max-width: 600px;
 }
+h1, h2 {
+    letter-spacing: 2px;
+    color: #808080;
+    font-weight: 700;
+}
 img {
     max-height: 500px;
+}
+.card {
+    border: 1px solid #808080;
+}
+.card-title {
+    font-weight: 700;
+}
+.attribute,
+.attribute:hover,
+.attribute:visited {
+    color: #808080;
 }

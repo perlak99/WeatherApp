@@ -1,6 +1,6 @@
 const key = '6c7c00d2e76b9195e3b6c63a39ed988a';
 const clock = document.querySelector(".clock");
-const time = document.querySelector("h1");
+const time = document.querySelector("h2");
 const form = document.querySelector("form");
 const weather = document.querySelector(".weather");
 const city = document.querySelector(".card-title");
