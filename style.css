@@ -1,0 +1,9 @@
+body {
+    background: #f0f0f0
+}
+.container {
+    max-width: 600px;
+}
+img {
+    max-height: 500px;
+}
