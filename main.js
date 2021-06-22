@@ -50,7 +50,7 @@ const updateUi = (data) => {
     offset = data.timezone;
     conditions.innerHTML = data.weather[0].description;
     temperature.innerHTML = data.main.temp;
-
+    city.innerHTML = data.name;
     checkDayTime(data.sys.sunrise, data.sys.sunset);
 
     setClock();
@@ -65,9 +65,15 @@ const updateUi = (data) => {
 form.addEventListener("submit", (e) => {
     e.preventDefault();
     formCity = form.city.value.trim();
-    city.innerHTML = formCity;
+    localStorage.setItem("city", formCity);
     getWeather(formCity)
         .then((data) => updateUi(data))
         .catch(() => alert("Wrong city name!"));
     form.reset();
 });
+
+if(localStorage.getItem("city")) {
+    getWeather(localStorage.getItem("city"))
+        .then((data => updateUi(data)))
+        .catch(err => console.log(err));
+}
