@@ -13,6 +13,12 @@ let date;
 let offset;
 let clockInterval;
 
+const getUtcDate = () => {
+  const now = new Date();
+  const utcDate = new Date(now.getTime() + now.getTimezoneOffset() * 60000);
+  return utcDate;
+};
+
 const renderError = (message) => {
   clearInterval(clockInterval);
   error.innerHTML = message;
@@ -28,23 +34,23 @@ const getWeather = async (city) => {
     const call = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${key}`;
 
     const response = await fetch(call);
-    if (!response.ok) throw new Error("Problem getting location data!");
+    if (!response.ok) {
+      if (response.status == 404)
+        throw new Error("There is no city of given name!");
+      else throw new Error("Problem getting location data!");
+    }
+
     const data = await response.json();
 
     return data;
   } catch (err) {
-    console.error(`${err}`);
-    renderError(`${err.message}`);
     throw err;
   }
 };
 
 const setClock = () => {
-  const localDate = new Date();
-  const localTime = localDate.getTime();
-  const localOffset = localDate.getTimezoneOffset() * 60000; // conversion to ms
-  const utc = localTime + localOffset;
-  date = new Date(utc + offset * 1000); // conversion seconds to ms
+  const utcDate = getUtcDate();
+  date = new Date(utcDate.getTime() + offset * 1000);
 
   let cityTime = "";
   cityTime +=
@@ -59,15 +65,9 @@ const setClock = () => {
 };
 
 const checkDayTime = (sunrise, sunset) => {
-  const localDate = new Date();
-  const localTime = localDate.getTime();
-  const localOffset = localDate.getTimezoneOffset() * 60000; // conversion to ms
-  const utc = localTime + localOffset;
-  const utcDate = new Date(utc);
-
-  const sunriseDate = new Date(sunrise * 1000 + localOffset);
-  const sunsetDate = new Date(sunset * 1000 + localOffset);
-
+  const utcDate = getUtcDate();
+  const sunriseDate = sunrise * 1000;
+  const sunsetDate = sunset * 1000;
   utcDate >= sunriseDate && utcDate < sunsetDate
     ? img.setAttribute("src", "day.jpg")
     : img.setAttribute("src", "night.jpg");
@@ -113,3 +113,8 @@ if (localStorage.getItem("city")) {
     }
   })();
 }
+
+(async function () {
+  const china = await getWeather("China");
+  console.log(china);
+})();
