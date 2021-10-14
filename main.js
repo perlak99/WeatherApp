@@ -1,7 +1,7 @@
 "use strict";
 const key = "6c7c00d2e76b9195e3b6c63a39ed988a";
 const clock = document.querySelector(".clock");
-const time = document.querySelector("h2");
+const clockTime = document.querySelector("h2");
 const form = document.querySelector("form");
 const weather = document.querySelector(".weather");
 const city = document.querySelector(".card-title");
@@ -13,16 +13,17 @@ let date;
 let offset;
 let clockInterval;
 
-const getUtcDate = () => {
+//returns date with utc time, but wrong timezone
+const getUtcTime = () => {
   const now = new Date();
-  const utcDate = new Date(now.getTime() + now.getTimezoneOffset() * 60000);
-  return utcDate;
+  const utcTime = new Date(now.getTime() + now.getTimezoneOffset() * 60000);
+  return utcTime;
 };
 
 const renderError = (message) => {
   clearInterval(clockInterval);
   error.innerHTML = message;
-  time.innerHTML = "";
+  clockTime.innerHTML = "";
   conditions.innerHTML = "";
   temperature.innerHTML = "";
   city.innerHTML = "";
@@ -49,7 +50,7 @@ const getWeather = async (city) => {
 };
 
 const setClock = () => {
-  const utcDate = getUtcDate();
+  const utcDate = getUtcTime();
   date = new Date(utcDate.getTime() + offset * 1000);
 
   let cityTime = "";
@@ -61,14 +62,26 @@ const setClock = () => {
       : date.getMinutes() + ":";
   cityTime +=
     date.getSeconds() < 10 ? "0" + date.getSeconds() : date.getSeconds();
-  time.innerHTML = cityTime;
+  clockTime.innerHTML = cityTime;
 };
 
 const checkDayTime = (sunrise, sunset) => {
-  const utcDate = getUtcDate();
-  const sunriseDate = sunrise * 1000;
-  const sunsetDate = sunset * 1000;
-  utcDate >= sunriseDate && utcDate < sunsetDate
+  const utcDate = new Date(getUtcTime().getTime());
+  const time = utcDate.getHours() * 3600 + utcDate.getMinutes() * 60 + offset;
+  //Sunrise and sunset parameters are UTC unix timestamps
+  const sunriseDate = new Date(sunrise * 1000);
+  //converting time to seconds
+  let sunriseTime =
+    sunriseDate.getUTCHours() * 3600 +
+    sunriseDate.getUTCMinutes() * 60 +
+    offset;
+  if (sunriseTime < 0) sunriseTime += 86400;
+  const sunsetDate = new Date(sunset * 1000);
+  let sunsetTime =
+    sunsetDate.getUTCHours() * 3600 + sunsetDate.getUTCMinutes() * 60 + offset;
+  if (sunsetTime < 0) sunsetTime += 86400;
+
+  time >= sunriseTime && time < sunsetTime
     ? img.setAttribute("src", "day.jpg")
     : img.setAttribute("src", "night.jpg");
 };
@@ -110,6 +123,7 @@ if (localStorage.getItem("city")) {
       updateUi(data);
     } catch (err) {
       renderError(`${err.message}`);
+      console.log(err);
     }
   })();
 }
