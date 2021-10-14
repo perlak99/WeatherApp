@@ -113,8 +113,3 @@ if (localStorage.getItem("city")) {
     }
   })();
 }
-
-(async function () {
-  const china = await getWeather("China");
-  console.log(china);
-})();
