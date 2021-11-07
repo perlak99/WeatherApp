@@ -1,4 +1,5 @@
 "use strict";
+
 const key = "6c7c00d2e76b9195e3b6c63a39ed988a";
 const clock = document.querySelector(".clock");
 const clockTime = document.querySelector("h2");
@@ -49,55 +50,40 @@ const getWeather = async (city) => {
   }
 };
 
-const setClock = () => {
-  const utcDate = getUtcTime();
-  date = new Date(utcDate.getTime() + offset * 1000);
-
-  let cityTime = "";
-  cityTime +=
-    date.getHours() < 10 ? "0" + date.getHours() + ":" : date.getHours() + ":";
-  cityTime +=
-    date.getMinutes() < 10
-      ? "0" + date.getMinutes() + ":"
-      : date.getMinutes() + ":";
-  cityTime +=
-    date.getSeconds() < 10 ? "0" + date.getSeconds() : date.getSeconds();
-  clockTime.innerHTML = cityTime;
+const checkDayTime = (sunrise, sunset, dt) => {
+  //sunrise and sunset are unix utc times
+  const rise = new Date(sunrise * 1000);
+  const set = new Date(sunset * 1000);
+  const cityTime = new Date(dt * 1000);
+  img.src = (cityTime >= rise) & (cityTime <= set) ? "day.jpg" : "night.jpg";
 };
 
-const checkDayTime = (sunrise, sunset) => {
-  const utcDate = new Date(getUtcTime().getTime());
-  const time = utcDate.getHours() * 3600 + utcDate.getMinutes() * 60 + offset;
-  //Sunrise and sunset parameters are UTC unix timestamps
-  const sunriseDate = new Date(sunrise * 1000);
-  //converting time to seconds
-  let sunriseTime =
-    sunriseDate.getUTCHours() * 3600 +
-    sunriseDate.getUTCMinutes() * 60 +
-    offset;
-  if (sunriseTime < 0) sunriseTime += 86400;
-  const sunsetDate = new Date(sunset * 1000);
-  let sunsetTime =
-    sunsetDate.getUTCHours() * 3600 + sunsetDate.getUTCMinutes() * 60 + offset;
-  if (sunsetTime < 0) sunsetTime += 86400;
-
-  time >= sunriseTime && time < sunsetTime
-    ? img.setAttribute("src", "day.jpg")
-    : img.setAttribute("src", "night.jpg");
+const setClock = () => {
+  const time = new Date(getUtcTime().getTime() + offset * 1000);
+  let h = time.getHours();
+  let m = time.getMinutes();
+  let s = time.getSeconds();
+  h = h < 10 ? "0" + h : h;
+  m = m < 10 ? "0" + m : m;
+  s = s < 10 ? "0" + s : s;
+  clockTime.innerHTML = h + ":" + m + ":" + s;
 };
 
 const updateUi = (data) => {
+  //offset is shift in seconds from UTC
   offset = data.timezone;
+
   conditions.innerHTML = data.weather[0].description;
   temperature.innerHTML = data.main.temp + "&deg;C";
   city.innerHTML = data.name;
-  checkDayTime(data.sys.sunrise, data.sys.sunset);
+
+  checkDayTime(data.sys.sunrise, data.sys.sunset, data.dt);
 
   setClock();
   clockInterval = setInterval(setClock, 1000);
 
-  if (weather.classList.contains("d-none")) weather.classList.remove("d-none");
-  if (clock.classList.contains("d-none")) clock.classList.remove("d-none");
+  weather.classList.remove("d-none");
+  clock.classList.remove("d-none");
 
   error.innerHTML = "";
 };
